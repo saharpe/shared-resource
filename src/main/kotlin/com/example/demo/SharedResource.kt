@@ -1,5 +1,7 @@
 package com.example.demo
 
+import java.util.UUID
+
 class SharedResource {
 
     private var mutableMap = mutableMapOf<String, String>()
@@ -15,5 +17,12 @@ class SharedResource {
         synchronized(this) {
             mutableMap[key] = value
             println("put: key [$key] for value [$value]")
+        }
+
+    fun generateValue(key: String) =
+        synchronized(this) {
+            val generatedValue = UUID.randomUUID().toString()
+            mutableMap[key] = generatedValue
+            println("generateValue: key [$key] for value [$generatedValue]")
         }
 }
