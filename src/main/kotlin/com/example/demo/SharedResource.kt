@@ -1,28 +1,38 @@
 package com.example.demo
 
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.util.UUID
 
 class SharedResource {
 
-    private var mutableMap = mutableMapOf<String, String>()
+    private val mutex: Mutex = Mutex()
+    private var mutableMap: MutableMap<String, String> = mutableMapOf<String, String>()
 
-    fun get(key: String): String? =
-        synchronized(this) {
+    suspend fun get(key: String): String? {
+        mutex.withLock {
             val value = mutableMap[key]
-            println("get: key [$key] got value [$value]")
-            value
+            println("get: key [$key] for value [$value]")
+            return value
         }
+    }
 
-    fun put(key: String, value: String) =
-        synchronized(this) {
+    suspend fun put(key: String, value: String) {
+        mutex.withLock {
             mutableMap[key] = value
             println("put: key [$key] for value [$value]")
         }
+    }
 
-    fun generateValue(key: String) =
-        synchronized(this) {
-            val generatedValue = UUID.randomUUID().toString()
-            mutableMap[key] = generatedValue
-            println("generateValue: key [$key] for value [$generatedValue]")
+    suspend fun generateValue(key: String) {
+        println("generateValue: generating value...")
+        delay(1000L)
+        val generatedValue = UUID.randomUUID().toString()
+        println("generateValue: value generated [$generatedValue]")
+
+        mutex.withLock {
+            put(key, generatedValue)
         }
+    }
 }
